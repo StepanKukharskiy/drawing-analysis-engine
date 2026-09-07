@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1.0",
+  "model_type": "deterministic_logistic_leader_target_ranker",
+  "feature_names": [
+    "terminal_proximity",
+    "endpoint_proximity",
+    "length_fraction",
+    "stroke_support",
+    "path_candidate_score",
+    "repetition_support",
+    "inside_view",
+    "leader_crossing_angle",
+    "native_source"
+  ],
+  "weights": [
+    2.549285246,
+    3.030152547,
+    -0.0954376499,
+    0.1643141842,
+    -0.2160982794,
+    0.0,
+    -0.1142609672,
+    -0.7990207784,
+    -0.4257972904
+  ],
+  "bias": -1.7784663312,
+  "training": {
+    "example_count": 26,
+    "positive_count": 7,
+    "negative_count": 19,
+    "source_sha256": "58eab612498d0e2bacad1e1f16263b01bfaa8f4c861df62bf13d27e6ea8eaa00",
+    "epochs": 2400,
+    "learning_rate": 0.08,
+    "l2": 0.01,
+    "synthetic_pdf": "/Users/stepankukharskiy/Documents/rebar/output/pdf/synthetic_leader/leader_target_synthetic_corpus.pdf",
+    "variant_count": 7
+  },
+  "acceptance_contract": {
+    "ranking_only": true,
+    "probability_cannot_accept_identity": true,
+    "deterministic_uniqueness_gate_required": true,
+    "schedule_values_used": false
+  },
+  "model_sha256": "42616b5db095796f3b603509e54c861369cc49fd1e0eb81efe1737296db544c8"
+}

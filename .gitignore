@@ -1,0 +1,53 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+tmp/
+.venv-vlm/
+models/.cache/
+review-app/node_modules/
+review-app/.svelte-kit/
+review-app/build/
+review-app/data/jobs/
+
+# Runtime/project data and local evidence are provisioned separately from source.
+/output/
+/data/
+/outputs/
+/test/
+/archive/
+/videos/
+/psk-pymupdf/
+/Пример_чертежей_для_декомпозиции/
+/Пример_черт*/
+/audit_examples/
+/docs/content-series/
+/review-app/
+/*.pdf
+/*.jpg
+/*.mp4
+/estimation-output/
+/review-app/data/
+/docs/release-preparation/workspace-*/
+
+# Installed/build state wherever nested; keep lockfiles and authored assets.
+node_modules/
+.svelte-kit/
+.venv*/
+.cache/
+.env
+.env.*
+!.env.example
+*.secret.json
+*.sqlite-wal
+*.sqlite-shm
+
+# Fixtures are admitted only by the curated source manifest until rights and
+# provisioning are established. Local qualification inputs remain untouched.
+/fixtures/
+
+/apps/review/data/
+/apps/review/build/
+/apps/review/.svelte-kit/
+
+# Local source-stage receipts are evidence, not repository source.
+/source-stage.json

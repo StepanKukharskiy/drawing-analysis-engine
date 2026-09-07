@@ -1,0 +1,15 @@
+# Engine CLI and synthetic test environment; Python 3.14.
+PyMuPDF==1.27.2.3
+ezdxf==1.4.4
+fonttools==4.64.0
+pyparsing==3.3.2
+typing_extensions==4.16.0
+manifold3d==3.5.2
+numpy==2.4.6
+scipy==1.18.0
+opencv-python-headless==4.13.0.92
+Pillow==12.2.0
+pytesseract==0.3.13
+shapely==2.1.2
+trimesh==4.12.2
+packaging==26.2

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "id": "universal_estimate_v1",
+  "title": "Universal preliminary reinforcement estimate",
+  "steel_density_kg_m3": 7850.0,
+  "stirrup_tie_inside_bend_diameter_factor": 4.0,
+  "stirrup_tie_centerline_radius_factor": 2.5,
+  "sensitivity_centerline_radius_factor": 3.0,
+  "hook_135_min_bar_diameters": 6.0,
+  "hook_135_min_mm": 75.0,
+  "calculation_rounding_mm": 1.0,
+  "fabrication_rounding_mm": 5.0,
+  "waste_allowance_percent": 0.0,
+  "allow_convention_dependent_diameter": true,
+  "allow_unique_role_diameter_inheritance": true,
+  "allow_compound_callout_nominal_length": true,
+  "compound_callout_length_code_multiplier_mm": 10.0
+}

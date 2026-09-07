@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/rebar-program.schema.json",
+  "title": "Drawing-neutral symbolic reinforcement program",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "layer",
+    "status",
+    "groups",
+    "spacing_constraints",
+    "identity_hypotheses",
+    "spacing_associations",
+    "identity_associations",
+    "fabrication_details",
+    "metric_anchors",
+    "physical_path_graph",
+    "unassigned_spacing_constraints",
+    "unassigned_identity_hypotheses",
+    "fabrication_status",
+    "contract"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "layer": {"const": "rebar_program"},
+    "status": {"enum": ["partial_groups_resolved", "observations_only", "unresolved"]},
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "identity", "role", "bar_spec", "topology", "placement", "distribution", "quantity", "fabrication", "evidence"]
+      }
+    },
+    "spacing_constraints": {"type": "array"},
+    "identity_hypotheses": {"type": "array"},
+    "spacing_associations": {"type": "array"},
+    "identity_associations": {"type": "array"},
+    "fabrication_details": {"type": "array"},
+    "metric_anchors": {"type": "array"},
+    "physical_path_graph": {
+      "type": "object",
+      "required": ["layer", "status", "fragments", "connections", "components", "summary", "contract"],
+      "properties": {
+        "layer": {"const": "rebar_physical_path_graph"},
+        "fragments": {"type": "array"},
+        "connections": {"type": "array"},
+        "components": {"type": "array"},
+        "summary": {"type": "object"}
+      }
+    },
+    "unassigned_spacing_constraints": {"type": "array"},
+    "unassigned_identity_hypotheses": {"type": "array"},
+    "validation": {"type": "object"},
+    "quantity_status": {"enum": ["partial", "unavailable"]},
+    "fabrication_status": {"enum": ["resolved", "partial", "unavailable"]},
+    "unknowns": {"type": "array", "items": {"type": "string"}},
+    "contract": {
+      "type": "object",
+      "required": ["requires_concrete_solid", "schedule_values_used", "geometry_distribution_fabrication_separated", "deterministic_distribution_expander", "associations_require_unique_score_margin", "schedule_lengths_used", "raster_details_preserve_image_provenance", "dimension_anchored_paths_require_reprojection", "generic_path_graph_precedes_object_solver", "visible_projection_is_not_physical_length"],
+      "properties": {
+        "requires_concrete_solid": {"const": false},
+        "schedule_values_used": {"const": false},
+        "geometry_distribution_fabrication_separated": {"const": true},
+        "deterministic_distribution_expander": {"const": true},
+        "associations_require_unique_score_margin": {"const": true},
+        "schedule_lengths_used": {"const": false},
+        "raster_details_preserve_image_provenance": {"const": true},
+        "dimension_anchored_paths_require_reprojection": {"const": true},
+        "generic_path_graph_precedes_object_solver": {"const": true},
+        "visible_projection_is_not_physical_length": {"const": true}
+      }
+    }
+  }
+}

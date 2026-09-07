@@ -1,0 +1,187 @@
+{
+  "schema_version": "0.2.0",
+  "large_pdf_bytes": 100000,
+  "gates": {
+    "fast": {
+      "budget_seconds": 120,
+      "per_test_warning_seconds": 2,
+      "allowed_events": [],
+      "allowed_event_patterns": {
+        "ocr": [
+          "test_raster_fallback.*",
+          "test_synthetic_graph_pdf.*"
+        ],
+        "drawing_analysis": [
+          "test_wbdg_step5.*"
+        ]
+      }
+    },
+    "replay": {
+      "patterns": [
+        "test_mep_duct_slice.DuctSliceReplayTests.*",
+        "test_mep_duct_slice.DuctNativeShapeReplayTests.*",
+        "test_mep_endpoint_review_coverage.EndpointReviewCoverageReplayTest.*",
+        "test_mep_native_subpath_replay.NativeSubpathReplayTest.*",
+        "test_mep_missing_bend_recovery.MissingBendRecoveryTest.test_real_*",
+        "test_mep_route_body_partition.RouteBodyPartitionTest.test_real_*",
+        "test_mep_local_callout_certificate.LocalCalloutCertificateReplayTest.*",
+        "test_mep_page_callout_bindings.PageCalloutBindingReplayTest.*",
+        "test_mep_route_callout_tracing.RouteCalloutTracingReplayTests.*",
+        "test_mep_outlined_route_composites.M35PreparationReplayTest.*",
+        "test_mep_equipment_input_preparation.EquipmentInputPreparationReplayTest.*",
+        "test_mep_boundary_adjacency_experiment.BoundaryAdjacencyReplayTest.*",
+        "test_mep_stroke_ownership.MepStrokeOwnershipReplayTest.*",
+        "test_mep_native_dimension_roles.*",
+        "test_mep_native_cap_replay.NativeCapReplayTest.test_real_package_native_cap_negatives_replay_with_all_competitors",
+        "test_mep_projected_trace_completion.*",
+        "test_mep_projected_identity_bindings.*",
+        "test_mep_fitting_hypotheses.MepFittingHypothesesTest.test_real_*",
+        "test_mep_equipment_identity.EquipmentIdentityReplayTest.test_real*",
+        "test_mep_document_links.NistDocumentReferenceReplayTests.*",
+        "test_mep_native_branch_connections.MepNativeBranchConnectionsTest.test_real_multi_port_queries_retain_every_unresolved_native_destination",
+        "test_mep_native_equipment_observations.NativeEquipmentReplayTest.test_real_pilot_replays_separate_body_tag_and_port_abstentions",
+        "test_mep_native_boundary_connections.MepNativeBoundaryConnectionsTest.test_frozen_real_bends_replay_all_accepts_and_preserve_branch_negatives",
+        "test_step1a_portability.Step1APortabilityTest.test_candidate_08_frozen_semantic_snapshot",
+        "test_same_object_constructive_assembly.SameObjectConstructiveAssemblyTest.test_candidate_08_directed_bindings_replay_without_source_pdf",
+        "test_rebar_program.RebarProgramTest.test_k7_frozen_graph_preserves_partial_groups",
+        "test_step0_contracts.*",
+        "test_mep_sheet_registry.MepSheetRegistryTest.test_frozen_registry_contract_replays_without_source_pdf",
+        "test_mep_attribute_binding.MepAttributeBindingTest.test_replay_is_deterministic_when_binding_evidence_order_changes",
+        "test_mep_real_m2_m5_checkpoint.MepRealM2M5CheckpointTest.test_frozen_real_checkpoint_replays_without_source_pdf",
+        "test_mep_network_assembly.MepNetworkAssemblyTest.test_frozen_real_composite_overlap_stays_two_intervals_without_a_run",
+        "test_mep_bounded_local_3d.MepBoundedLocal3dTest.test_frozen_real_checkpoint_validates_and_replays_exactly",
+        "test_mep_bounded_clash_verification.MepBoundedClashVerificationTest.test_frozen_real_checkpoint_replays_all_claim_abstentions_and_zero_runs",
+        "test_mep_item_catalog.MepItemCatalogTest.test_frozen_catalog_validates_and_replays_exactly",
+        "test_mep_item_catalog.MepItemCatalogTest.test_generator_replays_json_and_explicit_null_review_csv",
+        "test_mep_occurrence_coverage_audit.MepOccurrenceCoverageAuditTest.test_frozen_reviewed_audit_replays_exactly",
+        "test_mep_bounded_discrete_counts.MepBoundedDiscreteCountsTest.test_frozen_real_result_and_generator_replay_exactly",
+        "test_mep_m4_discrete_coverage.MepM4DiscreteCoverageTest.test_generator_replays_all_frozen_outputs_exactly",
+        "test_mep_declared_data.MepDeclaredDataTest.test_frozen_result_and_generator_replay_exactly",
+        "test_takeoff_intelligence.TakeoffIntelligenceTest.test_frozen_checkpoint_and_generator_replay_exactly",
+        "test_takeoff_intelligence.TakeoffIntelligenceTest.test_candidate_08_adapts_one_physical_object_and_calculated_volume",
+        "test_takeoff_intelligence.TakeoffIntelligenceTest.test_concrete_adapter_fails_on_quantity_or_object_authority_mutation",
+        "test_takeoff_intelligence.TakeoffIntelligenceTest.test_shared_checkpoint_activates_only_scoped_calculated_lines",
+        "test_rebar_takeoff_adapter.RebarTakeoffAdapterTest.test_mixed_family_fixture_preserves_accepted_and_unresolved_separately",
+        "test_rebar_takeoff_adapter.RebarTakeoffAdapterTest.test_profile_estimates_never_enter_calculated_channel",
+        "test_rebar_takeoff_adapter.RebarTakeoffAdapterTest.test_resolved_detail_takeoff_maps_scoped_count_and_length_but_not_mass",
+        "test_rebar_takeoff_adapter.RebarTakeoffAdapterTest.test_unresolved_drawing_emits_observation_without_item_or_quantity"
+      ],
+      "budget_seconds": 120,
+      "per_test_warning_seconds": 2,
+      "allowed_events": []
+    },
+    "live-sheet": {
+      "patterns": [
+        "test_estimation_folder_cli.FolderCliTest.test_selected_*",
+        "test_estimation_cli.EstimationCliLiveTest.*",
+        "test_mep_duct_slice.DuctSliceLiveTests.*",
+        "test_mep_route_body_partition.RouteBodyPartitionLiveTest.*",
+        "test_mep_stroke_ownership.MepStrokeOwnershipLiveTest.*",
+        "test_mep_projected_trace_completion_live.*",
+        "test_mep_equipment_identity.EquipmentIdentityReplayTest.test_live*",
+        "test_mep_document_links.NistDocumentReferenceLiveTests.*",
+        "test_mep_native_branch_connections.MepNativeBranchConnectionsTest.test_live_multi_port_sources_match_complete_native_queries",
+        "test_mep_native_equipment_observations.NativeEquipmentReplayTest.test_live_native_queries_reproduce_every_pilot_equipment_source",
+        "test_mep_native_boundary_connections.MepNativeBoundaryConnectionsTest.test_live_native_boundary_queries_match_frozen_source",
+        "test_mep_annotation_observations.MepAnnotationObservationsTest.test_live_fixture_matches_frozen_source_and_reviewed_truth",
+        "test_mep_sheet_registry.MepSheetRegistryTest.test_live_fixture_matches_frozen_registry_and_reviewed_page_roles",
+        "test_mep_real_m2_m5_checkpoint.MepRealM2M5CheckpointTest.test_live_regeneration_matches_frozen_real_checkpoint",
+        "test_mep_declared_data.MepDeclaredDataTest.test_live_pdf_region_extraction_replays_frozen_observations",
+        "test_step1a_portability.Step1APortabilityTest.test_candidate_08_live_regeneration_matches_all_current_certificates",
+        "test_view_segmentation_full_sheet.*",
+        "test_object_agnostic_understanding.ObjectAgnosticUnderstandingTest.test_every_native_token_has_one_primary_role",
+        "test_object_agnostic_understanding.ObjectAgnosticUnderstandingTest.test_textless_sheet_keeps_resolved_profile_after_dimension_adjudication",
+        "test_object_agnostic_understanding.ObjectAgnosticUnderstandingTest.test_split_bundle_preserves_compact_graph_and_evidence",
+        "test_rebar_program.RebarProgramTest.test_k1_groups_survive_dimension_ownership_adjudication",
+        "test_rebar_program.RebarProgramTest.test_symbolic_observations_survive_without_concrete_solid",
+        "test_schedule_comparison.ScheduleComparisonTest.test_class_subtotals_compare_after_generic_prism_closure",
+        "test_schedule_comparison.ScheduleComparisonTest.test_fragmented_outlined_grid_uses_semantic_row_and_cell_ocr",
+        "test_schedule_comparison.ScheduleComparisonTest.test_k1_freezes_graph_then_reports_concrete_discrepancy",
+        "test_schedule_comparison.ScheduleComparisonTest.test_k7_declared_totals_are_independent",
+        "test_schedule_comparison.ScheduleComparisonTest.test_native_specification_sums_only_arithmetic_closed_steel_rows",
+        "test_schedule_comparison.ScheduleComparisonTest.test_outlined_schedule_cells_are_ocrd_only_after_3179_graph_is_frozen",
+        "test_schedule_comparison.ScheduleComparisonTest.test_textless_specification_uses_exact_ocr_total_cells",
+        "test_dimension_attachment.DimensionAttachmentTest.test_midpoint_ticks_and_rotated_numeric_text_are_recognized",
+        "test_generic_prismatic_solver.*",
+        "test_generic_profile_extrusion_solver.*",
+        "test_metric_equation_graph.MetricEquationGraphTest.test_v24_equations_close_metric_scope_without_filename_dispatch",
+        "test_native_vector_detail_linking.NativeVectorDetailLinkingTest.test_fragmented_grid_with_raster_detail_rows_is_detected",
+        "test_pipeline.PipelineTests.test_outlined_text_pdf_routes_to_fallback",
+        "test_pipeline.PipelineTests.test_vector_text_pdf_is_classified",
+        "test_semantic_3d_solver.*",
+        "test_native_detail_assembly.NativeDetailLiveTest.*",
+        "test_native_cage_assembly.CageLiveTest.*",
+        "test_view_frame_inference.ViewFrameInferenceTest.test_rotated_native_sheet_links_section_5_5_through_real_path_nodes"
+      ],
+      "budget_seconds": 900,
+      "allowed_events": [
+        "canonical_large_pdf_open",
+        "drawing_analysis",
+        "ocr"
+      ]
+    },
+    "render": {
+      "patterns": [
+        "test_mep_duct_slice.DuctSliceRenderTests.*",
+        "test_mep_page_callout_bindings.PageCalloutBindingRenderTest.*",
+        "test_mep_local_callout_certificate.LocalCalloutCertificateRenderTest.*",
+        "test_mep_route_callout_tracing.RouteCalloutTracingRenderTests.*",
+        "test_mep_all_sheet_audit.*",
+        "test_mep_region_owned_audit.*",
+        "test_mep_element_label_atlas.*",
+        "test_mep_network_drawing_audit.*",
+        "test_mep_document_links.NistDocumentReferenceRenderTests.*",
+        "test_mep_partial_audit.MepPartialAuditTest.test_pdf_retains_source_annotations_navigation_and_unresolved_schedule",
+        "test_mep_partial_audit.MepPartialAuditTest.test_automatic_pdf_paginates_all_proposals_with_source_links",
+        "test_mep_partial_audit.MepPartialAuditTest.test_twenty_occurrences_continue_without_losing_exact_source_targets",
+        "test_mep_partial_audit.MepPartialAuditTest.test_human_vector_and_raster_editions_keep_items_and_readable_links",
+        "test_mep_partial_audit.MepPartialAuditTest.test_highlight_gaps_preserve_text_pixels_and_overlapping_note_boxes",
+        "test_mep_partial_audit.MepPartialAuditTest.test_vector_closeups_include_original_note_appearances",
+        "test_mep_partial_audit.MepPartialAuditTest.test_highlights_preserve_inherited_font_resources",
+        "test_mep_project_review.MepProjectReviewTest.test_marked_audit_retains_all_rows_and_reciprocal_links",
+        "test_mep_human_review_register.MepHumanReviewRegisterTest.test_pdf_register_paginates_all_rows_and_shape_links_without_overflow",
+        "test_object_agnostic_audit.ObjectAgnosticAuditTest.test_candidate_08_renders_union_exterior_and_separate_beam_candidate",
+        "test_object_agnostic_audit.ObjectAgnosticAuditTest.test_textless_non_column_keeps_resolved_marked_audit",
+        "test_object_agnostic_audit.ObjectAgnosticAuditTest.test_generic_solid_waits_for_dimension_ownership_adjudication",
+        "test_object_agnostic_audit.ObjectAgnosticAuditTest.test_unresolved_solid_gets_explicit_3d_status_page",
+        "test_object_agnostic_audit.ObjectAgnosticAuditTest.test_unowned_dimension_proposals_do_not_leak_into_rebar_takeoff",
+        "test_object_agnostic_audit.ObjectAgnosticAuditTest.test_drawing_takeoff_keeps_convention_mass_out_of_strict_comparison",
+        "test_object_agnostic_audit.ObjectAgnosticAuditTest.test_small_pdf_to_analysis_to_audit_smoke",
+        "test_estimate_comparison_audit.EstimateComparisonAuditTest.test_k1_audit_marks_declaration_and_discrepancy",
+        "test_multi_component_solid_audit.*"
+      ],
+      "allowed_events": [
+        "canonical_large_pdf_open",
+        "audit_generation"
+      ],
+      "allowed_event_patterns": {
+        "drawing_analysis": [
+          "test_object_agnostic_audit.ObjectAgnosticAuditTest.test_small_pdf_to_analysis_to_audit_smoke"
+        ],
+        "ocr": [
+          "test_object_agnostic_audit.ObjectAgnosticAuditTest.test_small_pdf_to_analysis_to_audit_smoke"
+        ]
+      }
+    },
+    "research": {
+      "patterns": [
+        "test_compare_reviewed_leader_set_methods.*",
+        "test_leader_certificate_search_benchmark.*",
+        "test_placement_pair_pilot.*",
+        "test_reviewed_leader_set_pilot.*",
+        "test_reviewed_leader_set_v2.*",
+        "test_reviewed_leader_set_v3.*",
+        "test_reviewed_leader_set_v4.*"
+      ],
+      "allowed_events": []
+    },
+    "full-corpus": {
+      "allowed_events": [
+        "canonical_large_pdf_open",
+        "drawing_analysis",
+        "ocr",
+        "audit_generation"
+      ]
+    }
+  }
+}

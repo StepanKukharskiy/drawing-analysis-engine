@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/concrete-reconstruction-input.schema.json",
+  "title": "Drawing-neutral concrete reconstruction input",
+  "type": "object",
+  "required": ["object_name", "shaft"],
+  "properties": {
+    "object_name": {"type": "string", "minLength": 1},
+    "shaft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width_x_mm", "depth_y_mm", "height_z_mm"],
+      "properties": {
+        "width_x_mm": {"type": "number", "exclusiveMinimum": 0},
+        "depth_y_mm": {"type": "number", "exclusiveMinimum": 0},
+        "height_z_mm": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "corbels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "direction_x",
+          "projection_mm",
+          "taper_bottom_z_mm",
+          "rectangular_bottom_z_mm",
+          "top_z_mm"
+        ],
+        "properties": {
+          "direction_x": {"enum": [-1, 1]},
+          "projection_mm": {"type": "number", "exclusiveMinimum": 0},
+          "depth_mm": {"type": "number", "exclusiveMinimum": 0},
+          "taper_bottom_z_mm": {"type": "number", "minimum": 0},
+          "rectangular_bottom_z_mm": {"type": "number", "minimum": 0},
+          "top_z_mm": {"type": "number", "exclusiveMinimum": 0},
+          "status": {"type": "string"}
+        }
+      },
+      "default": []
+    },
+    "recesses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "center_x_mm",
+          "center_z_mm",
+          "width_mm",
+          "height_mm",
+          "depth_mm"
+        ],
+        "properties": {
+          "center_x_mm": {"type": "number"},
+          "center_z_mm": {"type": "number"},
+          "width_mm": {"type": "number", "exclusiveMinimum": 0},
+          "height_mm": {"type": "number", "exclusiveMinimum": 0},
+          "depth_mm": {"type": "number", "exclusiveMinimum": 0},
+          "face_y": {"enum": [-1, 1], "default": 1},
+          "status": {"type": "string"}
+        }
+      },
+      "default": []
+    },
+    "reinforcement": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["mark", "role", "instance", "diameter_mm", "placement_status", "points_xyz_mm"],
+        "properties": {
+          "mark": {"type": "string", "minLength": 1},
+          "role": {"type": "string", "minLength": 1},
+          "instance": {"type": "integer", "minimum": 1},
+          "diameter_mm": {"type": ["number", "null"], "exclusiveMinimum": 0},
+          "placement_status": {"enum": ["drawing_constrained", "reviewed_schematic", "unknown"]},
+          "points_xyz_mm": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {"type": "number"},
+                {"type": "number"},
+                {"type": "number"}
+              ],
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "closed": {"type": "boolean", "default": false},
+          "evidence": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "default": []
+    },
+    "declared_volume_m3": {"type": ["number", "null"]},
+    "source_status": {"type": "string"},
+    "evidence": {"type": "array", "items": {"type": "string"}},
+    "unknowns": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

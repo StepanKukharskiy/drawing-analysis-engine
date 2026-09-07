@@ -1,0 +1,10 @@
+PyMuPDF>=1.27,<2
+ezdxf>=1.4.4,<2
+manifold3d>=3.5,<4
+numpy>=1.26,<3
+scipy>=1.18,<2
+opencv-python-headless>=4.10,<5
+Pillow>=10,<13
+pytesseract>=0.3.13,<1
+shapely>=2,<3
+trimesh>=4.12,<5

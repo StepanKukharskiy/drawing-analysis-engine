@@ -1,0 +1,38 @@
+name: Engine repository
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    env:
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
+      OMP_THREAD_LIMIT: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: deploy/source/requirements.lock
+      - name: Host OCR and fonts
+        # Reuse the structural deployment's verified OCR version/source hash.
+        # The distribution's older binary changes recognition on real drawings.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake pkg-config libleptonica-dev tesseract-ocr-eng tesseract-ocr-rus tesseract-ocr-osd fonts-dejavu-core
+          curl --fail --location --output "$RUNNER_TEMP/tesseract.tar.gz" https://github.com/tesseract-ocr/tesseract/archive/refs/tags/5.5.2.tar.gz
+          echo "6235ea0dae45ea137f59c09320406f5888383741924d98855bd2ce0d16b54f21  $RUNNER_TEMP/tesseract.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/tesseract.tar.gz" -C "$RUNNER_TEMP"
+          cmake -S "$RUNNER_TEMP/tesseract-5.5.2" -B "$RUNNER_TEMP/ocr-build" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_TRAINING_TOOLS=OFF -DBUILD_TESTS=OFF -DOPENMP_BUILD=OFF -DGRAPHICS_DISABLED=ON -DDISABLE_ARCHIVE=ON -DDISABLE_CURL=ON
+          cmake --build "$RUNNER_TEMP/ocr-build" --target tesseract --parallel 2
+          sudo install "$RUNNER_TEMP/ocr-build/bin/tesseract" /usr/local/bin/tesseract
+          python -c "import subprocess; assert subprocess.check_output(['tesseract','--version'], text=True).splitlines()[0] == 'tesseract 5.5.2'"
+      - name: Install declared Python environment
+        run: python -m pip install -r deploy/source/requirements.lock
+      - name: Verify repository index
+        run: python -B deploy/source/engine_repository.py check-index
+      - name: Engine synthetic tests
+        run: python -B deploy/source/engine_repository.py test
+      - name: CLI delivery smoke
+        run: python -B deploy/source/engine_repository.py smoke
