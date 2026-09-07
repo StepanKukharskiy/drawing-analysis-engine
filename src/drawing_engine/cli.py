@@ -13,6 +13,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import uuid
 
 from src.drawing_engine.project.analysis_job_manifest import ALLOWED_ARTIFACTS, sha256_file
 from src.drawing_engine.disciplines.rebar.estimation_profile import DEFAULT_PROFILE_PATH
@@ -258,6 +259,46 @@ def export_audits(source: Path, output: Path, *, page_number=None, task="auto",
     return result
 
 
+def resolve_export_source(source: Path) -> Path:
+    """Find one completed project in the caller's bounded output locations."""
+    source = Path(source)
+    if source.is_file():
+        if inspect_result(source).get('schema_version') == 'estimation_batch.v1':
+            raise ValueError('batch index contains multiple document scopes; provide a document project or the batch folder')
+        return source.resolve()
+    if not source.is_dir():
+        raise ValueError(f"project path does not exist: {source}")
+    direct = source / 'result.json'
+    roots = [source / '.estimation-output', source / 'estimation-output']
+    if direct.is_file():
+        if read_json(direct).get('schema_version') == 'estimation_batch.v1':
+            roots = [source]
+        else:
+            inspect_result(direct)
+            return direct.resolve()
+    candidates = set()
+    for root in roots:
+        for pattern in ('result.json', '*/result.json', '*/*/result.json'):
+            for path in root.glob(pattern):
+                if not path.is_file():
+                    continue
+                try:
+                    manifest = read_json(path)
+                except (OSError, ValueError):
+                    continue
+                if (isinstance(manifest, dict) and manifest.get('schema_version') == 'estimation_cli.v1'
+                        and manifest.get('execution_status') == 'succeeded'
+                        and manifest.get('project', {}).get('schema_version') == 3):
+                    candidates.add(path.resolve())
+    if not candidates:
+        raise ValueError(f"no completed project result.json found in {source.resolve()} or its "
+                         ".estimation-output/estimation-output folders; run estimation audit first or provide a project path")
+    if len(candidates) != 1:
+        raise ValueError("multiple projects found; specify one result.json:\n" +
+                         '\n'.join(str(path) for path in sorted(candidates)))
+    return candidates.pop()
+
+
 def inspect_result(manifest_path: Path, artifact: str | None = None, pointer: str = ""):
     """Read native JSON through the portable index, checking its content hash."""
     manifest_path = Path(manifest_path).resolve(strict=True)
@@ -343,12 +384,13 @@ def main(argv=None):
     replay = commands.add_parser("replay-audit", help="regenerate an audit from frozen SQLite; no extraction")
     replay.add_argument("source", type=Path, help="project result.json")
     export = commands.add_parser("export", help="export JSON, detail HTML or resolved solid OBJ from frozen SQLite")
-    export.add_argument("source", type=Path, help="project result.json")
+    export.add_argument("source", type=Path, nargs="?", default=Path('.'),
+                        help="project result.json or folder; default: discover in the current folder")
     export.add_argument("--format", choices=("json", "html", "obj"), default="json")
     export.add_argument("--artifact")
     for command in (mep, audit, replay, export):
-        command.add_argument("--output", type=Path, required=command is not audit,
-                             help="new PDF file for replay-audit; new directory otherwise")
+        command.add_argument("--output", type=Path, required=command not in (audit, export),
+                             help="new PDF for replay-audit; new directory otherwise; export defaults to FORMAT-export[-N]")
         command.add_argument("--reserve-gib", type=float, default=1)
         command.add_argument("--max-growth-gib", type=float, default=1)
         command.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
@@ -357,7 +399,20 @@ def main(argv=None):
     inspect.add_argument("--artifact", help="artifact key from result.json, e.g. comparison or engineering_graph")
     inspect.add_argument("--pointer", default="", help="JSON pointer within the selected artifact")
     args = parser.parse_args(argv)
+    temporary = None
     try:
+        if args.command == 'export':
+            args.source = resolve_export_source(args.source)
+            # Fail before allocating scratch/output for an invalid snapshot.
+            project = FrozenProject(args.source.parent, read_json(args.source))
+            project.source()
+            if args.output is None:
+                base = Path.cwd() / f'{args.format}-export'
+                args.output = base
+                number = 1
+                while args.output.exists() or args.output.is_symlink():
+                    number += 1
+                    args.output = base.with_name(f'{base.name}-{number}')
         if args.command == "audit":
             if args.source == "page" and args.page_selection is not None:
                 if args.page is not None:
@@ -428,9 +483,7 @@ def main(argv=None):
                 raise ValueError("output already exists; choose a new export directory")
             if args.reserve_gib < 0 or args.max_growth_gib < 0:
                 raise ValueError("disk budgets must be non-negative")
-            temporary = args.output.absolute().with_name(args.output.name + ".temporary")
-            if temporary.exists():
-                raise ValueError("temporary directory already exists; choose a new export directory")
+            temporary = args.output.absolute().with_name(args.output.name + ".temporary-" + uuid.uuid4().hex)
             # Account even for staging-directory creation; all subprocess tempfiles
             # (including OCR libraries) use this explicit job-local scope.
             from src.drawing_engine.operations.artifact_disk_usage import artifact_disk_usage
@@ -465,14 +518,18 @@ def main(argv=None):
                 reserve_bytes=int(args.reserve_gib * GIB), max_growth_bytes=int(args.max_growth_gib * GIB),
                 required_outputs=[args.output if args.command == "replay-audit" else args.output / "result.json"],
                 cwd=Path(__file__).resolve().parents[2], env={**os.environ, "TMPDIR": str(temporary)})
-            if not any(temporary.iterdir()):
-                temporary.rmdir()
     except (KeyboardInterrupt, EOFError, OSError, ValueError, KeyError, IndexError, RuntimeError, subprocess.CalledProcessError) as exc:
         if isinstance(exc, KeyboardInterrupt) or (isinstance(exc, subprocess.CalledProcessError) and exc.returncode in (130, -2)):
             print(json.dumps({"event": "cancelled", "message": "Audit cancelled."}), file=sys.stderr)
             return 130
         print(json.dumps({"event": "error", "error_type": type(exc).__name__, "message": str(exc)}), file=sys.stderr)
         return 1
+    finally:
+        if temporary is not None:
+            try:
+                temporary.rmdir()  # Only our empty directory, including failed runs.
+            except OSError:
+                pass  # Retain nonempty diagnostics and never touch another run.
     return 0
 
 

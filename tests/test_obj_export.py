@@ -14,6 +14,7 @@ import numpy as np
 import trimesh
 
 from src.drawing_engine.disciplines.concrete.generic_prismatic_solver import _box_mesh
+from src.drawing_engine.cli import resolve_export_source
 from src.drawing_engine.exports.estimation_project_export import (
     FrozenProject, add_project_database, artifact_record, export_optional)
 
@@ -58,6 +59,100 @@ class ObjExportTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
+
+    def cli(self, *args, cwd=None):
+        return subprocess.run([sys.executable, '-B', str(ROOT / 'rebar.py'), 'export', *args,
+            '--reserve-gib', '0.05', '--max-growth-gib', '0.05'],
+            cwd=cwd or self.root, env={**os.environ, 'PYTHONPATH': '', 'PYTHONNOUSERSITE': '1',
+                'REBAR_DISK_USAGE_LOG': str(self.root / 'disk.jsonl')}, capture_output=True, text=True)
+
+    def test_bare_export_finds_hidden_project_and_chooses_new_output_on_repeat(self):
+        project = frozen_project(self.root / '.estimation-output', assembly())
+        before = project.database.read_bytes()
+        first = self.cli('--format', 'obj')
+        self.assertEqual(first.returncode, 0, first.stderr)
+        original = (self.root / 'obj-export' / 'EP14-part-7.mm.obj').read_bytes()
+        second = self.cli('--format', 'obj')
+        self.assertEqual(second.returncode, 0, second.stderr)
+        self.assertEqual((self.root / 'obj-export-2' / 'EP14-part-7.mm.obj').read_bytes(), original)
+        self.assertEqual((self.root / 'obj-export' / 'EP14-part-7.mm.obj').read_bytes(), original)
+        self.assertEqual(project.database.read_bytes(), before)
+        self.assertFalse(list(self.root.glob('*.temporary-*')))
+
+    def test_discovery_supports_timestamp_and_batch_document_layouts(self):
+        for index, relative in enumerate(('estimation-output/20260907',
+                'estimation-output/20260907/001-drawing', '.estimation-output/001-drawing')):
+            with self.subTest(relative=relative):
+                folder = self.root / str(index)
+                project = frozen_project(folder / relative, assembly())
+                self.assertEqual(resolve_export_source(folder), (project.root / 'result.json').resolve())
+
+    def test_project_folder_takes_precedence_and_explicit_source_still_works(self):
+        project = frozen_project(self.root / 'project', assembly())
+        frozen_project(project.root / '.estimation-output', assembly())
+        self.assertEqual(resolve_export_source(project.root), (project.root / 'result.json').resolve())
+        result = self.cli(str(project.root), '--format', 'obj', '--output', './chosen')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue((self.root / 'chosen' / 'EP14-part-7.mm.obj').is_file())
+
+    def test_batch_folder_resolves_document_but_batch_index_is_not_a_snapshot(self):
+        project = frozen_project(self.root / 'batch' / '001-drawing', assembly())
+        index = self.root / 'batch' / 'result.json'
+        index.write_text(json.dumps({'schema_version': 'estimation_batch.v1', 'execution_status': 'succeeded'}))
+        self.assertEqual(resolve_export_source(index.parent), (project.root / 'result.json').resolve())
+        with self.assertRaisesRegex(ValueError, 'batch index'):
+            resolve_export_source(index)
+
+    def test_ambiguous_discovery_lists_projects_without_starting_export(self):
+        a = frozen_project(self.root / 'estimation-output/a', assembly())
+        b = frozen_project(self.root / 'estimation-output/b', assembly())
+        result = self.cli('--format', 'obj')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('multiple projects', result.stderr)
+        self.assertIn(str((a.root / 'result.json').resolve()), result.stderr)
+        self.assertIn(str((b.root / 'result.json').resolve()), result.stderr)
+        self.assertFalse((self.root / 'obj-export').exists())
+        self.assertFalse(list(self.root.glob('*.temporary-*')))
+
+    def test_missing_project_and_derivative_index_are_not_project_inputs(self):
+        folder = self.root / '.estimation-output'
+        folder.mkdir()
+        (folder / 'result.json').write_text(json.dumps({'format': 'obj', 'state': 'exported'}))
+        result = self.cli('--format', 'obj')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('no completed project', result.stderr)
+        self.assertFalse((self.root / 'obj-export').exists())
+        self.assertFalse(list(self.root.glob('*.temporary-*')))
+
+    def test_stale_scratch_does_not_block_explicit_export_or_get_deleted(self):
+        frozen_project(self.root / '.estimation-output', assembly())
+        old = self.root / 'obj-export.temporary'
+        old.mkdir()
+        (old / 'diagnostic.txt').write_text('retain earlier job evidence')
+        result = self.cli('.estimation-output/result.json', '--format', 'obj', '--output', './obj-export')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue((self.root / 'obj-export' / 'EP14-part-7.mm.obj').is_file())
+        self.assertEqual((old / 'diagnostic.txt').read_text(), 'retain earlier job evidence')
+        self.assertFalse(list(self.root.glob('*.temporary-*')))
+
+    def test_failed_export_cleans_empty_owned_scratch_and_can_retry(self):
+        frozen_project(self.root / '.estimation-output', assembly())
+        failed = self.cli('--format', 'obj', '--artifact', 'declarations', '--output', './obj-export')
+        self.assertEqual(failed.returncode, 1)
+        self.assertFalse((self.root / 'obj-export').exists())
+        self.assertFalse(list(self.root.glob('*.temporary-*')))
+        retry = self.cli('--format', 'obj', '--output', './obj-export')
+        self.assertEqual(retry.returncode, 0, retry.stderr)
+        self.assertTrue((self.root / 'obj-export' / 'EP14-part-7.mm.obj').is_file())
+
+    def test_invalid_explicit_project_fails_before_allocating_scratch(self):
+        project = frozen_project(self.root / '.estimation-output', assembly())
+        project.database.write_bytes(project.database.read_bytes() + b'tamper')
+        result = self.cli('.estimation-output/result.json', '--format', 'obj')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('hash mismatch', result.stderr)
+        self.assertFalse((self.root / 'obj-export').exists())
+        self.assertFalse(list(self.root.glob('*.temporary-*')))
 
     def export(self, payload=None, *, artifact='assembly', name='case'):
         project = frozen_project(self.root / name, assembly() if payload is None else payload, artifact=artifact)

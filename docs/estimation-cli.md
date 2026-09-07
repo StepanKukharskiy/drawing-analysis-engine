@@ -190,6 +190,20 @@ clone or enlarge its extraction coverage.
 
 ## Inspect, replay and optional exports
 
+From a drawing/project folder, export without typing paths:
+
+```sh
+estimation export --format obj
+```
+
+The CLI first uses the current folder's `result.json`. Otherwise it searches
+`.estimation-output/` and `estimation-output/`, including up to two nested levels
+for timestamped runs and batch document projects. Only completed SQLite project
+indexes qualify; derivative export indexes do not. Multiple matches are listed
+with an error so you can select an explicit project file or folder.
+Without `--output`, OBJ goes into `./obj-export`, then `./obj-export-2`, and so on,
+preserving existing exports. JSON and HTML use the same `FORMAT-export` naming.
+
 ```sh
 python3 -B -m src.drawing_engine.cli inspect output/cli/new-ep14/result.json \
   --artifact assembly --pointer /child_parts/0
@@ -232,12 +246,13 @@ not establish their placement as an assembly. The export adds no quantity,
 fabrication or approval authority. Keep the original source/SQLite/audit delivery
 for evidence; OBJ is an optional derivative, not a replacement project delivery.
 
-All output paths must be new. Failed jobs do not publish a success manifest.
-The CLI monitors output and explicit sibling `<output>.temporary` staging with
+Explicit output paths must be new. Failed jobs do not publish a success manifest.
+The CLI monitors output and unique sibling `<output>.temporary-<run-id>` staging with
 a default 1 GiB reserve/growth budget and 3 GiB minimum free space; adjust
 `--reserve-gib` and `--max-growth-gib` for larger jobs. Telemetry stays in
-`data/operations/artifact-disk-usage.jsonl`. Private staging is removed on completion;
-historical delivered projects are preserved.
+`data/operations/artifact-disk-usage.jsonl`. Empty scratch is removed after success
+or failure. Nonempty diagnostics and older scratch directories remain preserved,
+and their existence does not block a new run. Historical delivered projects are preserved.
 
 ## Validation boundary
 

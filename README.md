@@ -34,6 +34,9 @@ estimation inspect /path/to/new-project/result.json --artifact comparison
 estimation export /path/to/new-detail-project/result.json --format obj --output /path/to/new-obj-export
 ```
 
+In a project/drawing folder, `estimation export --format obj` discovers its saved
+project and writes to a new `obj-export` folder (numbered if one already exists).
+
 Use a fresh output directory. A delivery preserves the source PDF, `project.sqlite`,
 marked `audit.pdf`, applicable exports such as DXF, and the hashed `result.json`
 index. Unsupported exports and unresolved geometry retain explicit reasons.
