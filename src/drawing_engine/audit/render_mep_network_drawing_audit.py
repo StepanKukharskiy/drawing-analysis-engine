@@ -318,7 +318,50 @@ def render_network_drawing_audit(source, output, review, *, preview_pages=None, 
             number=record["page_number"]; original_target=pdf[overview_map[number]]
             if original_target.rotation or original_target.cropbox != original_target.mediabox:
                 raise ValueError("drawing renderer currently requires uncropped, unrotated source pages")
-            rect=fitz.Rect(original_target.rect); width=rect.width*.29; size=max(12,rect.height/82)
+            rect=fitz.Rect(original_target.rect); size=max(12,rect.height/82)
+            # Measure using the selected font before extending the page. Keep
+            # the source drawing and readable type size intact; widen only the
+            # added sidebar when wrapping would hide the footer or first readout.
+            def header(column):
+                column.text(f"DRAWING {number}",size=size*1.5,bold=True,gap=size*.5)
+                counts=Counter(e["kind"] for e in page_entries[number])
+                column.text(f"{counts['route']} projected segment records" if single_page else f"{counts['route']} recovered route segments",gap=4)
+                column.text(f"{counts['identified_hvac']} identified HVAC bodies",gap=4)
+                column.text(f"{counts['unresolved_hvac_observation']} unresolved HVAC observations",gap=size*.8)
+                omitted_count=len(mapped_page_entries[number])-len(page_entries[number])
+                if omitted_count:
+                    column.text(f"{omitted_count} isolated geometry entries not highlighted; values remain in the app.",size=size*.8,color=MUTED,gap=size*.6)
+                column.text("Red: hot water supply / HHWS",color=SYSTEM_COLORS['heating_hot_water_supply'],gap=3)
+                column.text("Orange: hot water return / HHWR",color=SYSTEM_COLORS['heating_hot_water_return'],gap=3)
+                column.text("Blue: chilled supply / CHWS; cyan: return / CHWR",color=SYSTEM_COLORS['chilled_water_supply'],gap=3)
+                if include_isolated_geometry:
+                    column.text("Grey: system unknown / unclassified geometry",color=LIGHT,gap=3)
+                column.text("Purple: identified HVAC body + tag",color=PURPLE,gap=3)
+                column.text("Amber: HVAC tag; body / ports unknown",color=AMBER,gap=size*.8)
+                if single_page:
+                    column.text("Amber dashed: recorded unresolved alternatives / stops. Click marks for evidence IDs.",color=AMBER,size=size*.85,gap=size*.5)
+                column.text("2D length = projected length in this view, not installed length. Unknown = not recovered.",size=size*.85,color=MUTED,gap=size*.8)
+                execution=review["processing_scope"].get("execution_page_numbers")
+                if execution is None or number not in execution:
+                    column.text("This page is not in the recorded execution scope. No detection completeness is claimed.",color=AMBER,gap=size)
+            footer_text=("Frozen SQLite review: mep_review. Native marks retain record IDs. This audit covers only this source page; complete detection, physical continuity and installed quantities remain unresolved."
+                         if single_page else "Selected geometry is highlighted where clear of source text. All segments and values, including unmarked isolated geometry, remain in the app and manifest.")
+            priority=sorted((e for e in page_entries[number] if e["priority"]),
+                            key=lambda e:(-e["priority"],e["short_id"]))
+            width=rect.width*.29
+            while True:
+                measure=_Column(None,rect.width+width*.06,width*.88,y=size*1.5,size=size)
+                header(measure)
+                footer_measure=_Column(None,measure.x,measure.width,y=0,size=size*.8)
+                footer_measure.text(footer_text,gap=4)
+                footer_top=rect.height-35-footer_measure.y
+                if priority:
+                    _readout(measure,priority[0])
+                if measure.y <= footer_top-size*.3:
+                    break
+                if width >= rect.width:
+                    raise ValueError("drawing overview cannot fit readable header, footer and readout")
+                width=min(rect.width,width+size*2)
             original_target.set_mediabox(fitz.Rect(0,0,rect.width+width,rect.height))
             if source_opacity != 1:
                 # A white transparency veil fades the original vector drawing
@@ -335,32 +378,7 @@ def render_network_drawing_audit(source, output, review, *, preview_pages=None, 
             page=overlays.new_page(width=rect.width+width,height=rect.height)
             audit_number=overview_map[number]+1
             column=_Column(page,rect.width+width*.06,width*.88,y=size*1.5,size=size)
-            footer_text=("Frozen SQLite review: mep_review. Native marks retain record IDs. This audit covers only this source page; complete detection, physical continuity and installed quantities remain unresolved."
-                         if single_page else "Selected geometry is highlighted where clear of source text. All segments and values, including unmarked isolated geometry, remain in the app and manifest.")
-            footer_measure=_Column(None,column.x,column.width,y=0,size=size*.8)
-            footer_measure.text(footer_text,gap=4)
-            footer_top=rect.height-35-footer_measure.y
-            column.text(f"DRAWING {number}",size=size*1.5,bold=True,gap=size*.5)
-            counts=Counter(e["kind"] for e in page_entries[number])
-            column.text(f"{counts['route']} projected segment records" if single_page else f"{counts['route']} recovered route segments",gap=4)
-            column.text(f"{counts['identified_hvac']} identified HVAC bodies",gap=4)
-            column.text(f"{counts['unresolved_hvac_observation']} unresolved HVAC observations",gap=size*.8)
-            omitted_count=len(mapped_page_entries[number])-len(page_entries[number])
-            if omitted_count:
-                column.text(f"{omitted_count} isolated geometry entries not highlighted; values remain in the app.",size=size*.8,color=MUTED,gap=size*.6)
-            column.text("Red: hot water supply / HHWS",color=SYSTEM_COLORS['heating_hot_water_supply'],gap=3)
-            column.text("Orange: hot water return / HHWR",color=SYSTEM_COLORS['heating_hot_water_return'],gap=3)
-            column.text("Blue: chilled supply / CHWS; cyan: return / CHWR",color=SYSTEM_COLORS['chilled_water_supply'],gap=3)
-            if include_isolated_geometry:
-                column.text("Grey: system unknown / unclassified geometry",color=LIGHT,gap=3)
-            column.text("Purple: identified HVAC body + tag",color=PURPLE,gap=3)
-            column.text("Amber: HVAC tag; body / ports unknown",color=AMBER,gap=size*.8)
-            if single_page:
-                column.text("Amber dashed: recorded unresolved alternatives / stops. Click marks for evidence IDs.",color=AMBER,size=size*.85,gap=size*.5)
-            column.text("2D length = projected length in this view, not installed length. Unknown = not recovered.",size=size*.85,color=MUTED,gap=size*.8)
-            execution=review["processing_scope"].get("execution_page_numbers")
-            if execution is None or number not in execution:
-                column.text("This page is not in the recorded execution scope. No detection completeness is claimed.",color=AMBER,gap=size)
+            header(column)
             rows=page_entries[number]; boxes=boxes_by_page[number]
             for entry in mapped_page_entries[number]:
                 points=[p for path in entry["paths"] for p in path]
@@ -408,7 +426,6 @@ def render_network_drawing_audit(source, output, review, *, preview_pages=None, 
                     entry['printed_readouts'].append({'audit_page_number':audit_number,
                         'kind':'unresolved_tag_callout','text':caption,'label_rect_display':list(tag)})
                     labelled.append(entry['key'])
-            priority=sorted((e for e in rows if e["priority"]),key=lambda e:(-e["priority"],e["short_id"]))
             for entry in priority[:12]:
                 measured=_Column(None,column.x,column.width,y=column.y,size=column.size)
                 _readout(measured,entry)

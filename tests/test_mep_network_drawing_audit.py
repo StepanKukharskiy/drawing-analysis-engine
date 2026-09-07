@@ -3,6 +3,7 @@ import hashlib
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import fitz
 
@@ -40,6 +41,45 @@ def fixture(directory, count=2, attributed=True, page_count=1):
 
 
 class MepNetworkDrawingAuditTest(unittest.TestCase):
+    def test_sidebar_expands_for_wider_font_metrics_without_scaling_source(self):
+        from src.drawing_engine.audit.render_mep_partial_audit import _Column
+        original_layout = _Column._layout
+        def wide_metrics(column, text, size, bold):
+            width = column.width
+            try:
+                column.width *= .8
+                return original_layout(column, text, size, bold)
+            finally:
+                column.width = width
+        for single_page in (False, True):
+            with self.subTest(single_page=single_page), tempfile.TemporaryDirectory() as directory:
+                source, review = fixture(directory, count=1)
+                frozen = deepcopy(review)
+                output = Path(directory) / 'wide-font.pdf'
+                with patch.object(_Column, '_layout', wide_metrics):
+                    manifest = render_network_drawing_audit(source, output, review,
+                        maximum_closeups=0, single_page=single_page)
+                self.assertEqual(review, frozen)
+                self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), review['source_sha256'])
+                self.assertTrue(manifest['entries'][0]['printed_readouts'])
+                with fitz.open(source) as original, fitz.open(output) as rendered:
+                    page = rendered[0 if single_page else 1]
+                    self.assertGreater(page.rect.width, 800 * 1.29)
+                    self.assertEqual(page.rect.height, 600)
+                    self.assertEqual(page.search_for('KEEP NATIVE TEXT'), original[0].search_for('KEEP NATIVE TEXT'))
+                    self.assertIn('Frozen SQLite' if single_page else 'Selected geometry', page.get_text().replace('\xa0', ' '))
+
+    def test_unreadable_sidebar_still_fails_without_publishing(self):
+        from src.drawing_engine.audit.render_mep_partial_audit import _Column
+        with tempfile.TemporaryDirectory() as directory:
+            source, review = fixture(directory, count=1)
+            output = Path(directory) / 'unreadable.pdf'
+            with patch.object(_Column, '_layout', return_value=(['text'], 1000)):
+                with self.assertRaisesRegex(ValueError, 'cannot fit readable'):
+                    render_network_drawing_audit(source, output, review, maximum_closeups=0)
+            self.assertFalse(output.exists())
+            self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), review['source_sha256'])
+
     def test_single_page_sqlite_presentation_preserves_source_two_and_omits_json(self):
         with tempfile.TemporaryDirectory() as directory:
             source, review = fixture(directory, count=4, page_count=2)
