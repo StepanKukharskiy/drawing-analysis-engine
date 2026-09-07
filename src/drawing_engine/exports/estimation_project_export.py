@@ -311,6 +311,11 @@ def export_mep_page(source, output, *, database, project_id, document_id, page_n
 
 def export_optional(project, output, *, format='json', artifact=None):
     """Explicit compatibility export; SQLite remains the primary record store."""
+    if format == 'obj':
+        from src.drawing_engine.exports.obj_export import export_project_obj
+        return export_project_obj(project, output, artifact=artifact)
+    if format not in {'json', 'html'}:
+        raise ValueError('unsupported export format')
     output = Path(output)
     if format == 'html' and project.load('package_index')['mode'] != 'native_detail_assembly':
         raise ValueError('HTML export currently supports the detail review; use the interpretation PDF for this mode')

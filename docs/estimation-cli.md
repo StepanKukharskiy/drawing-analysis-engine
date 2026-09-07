@@ -201,12 +201,36 @@ python3 -B -m src.drawing_engine.cli export output/cli/new-ep14/result.json \
   --format json --artifact assembly --output output/cli/ep14-json
 python3 -B -m src.drawing_engine.cli export output/cli/new-ep14/result.json \
   --format html --output output/cli/ep14-html
+python3 -B -m src.drawing_engine.cli export output/cli/new-ep14/result.json \
+  --format obj --output output/cli/ep14-obj
 ```
 
 Omit `--artifact` to export all stored JSON bytes. The optional export index maps
 native artifact keys to safe filenames. HTML uses the existing detail renderer
 and includes its linked source/JSON/preview assets; other modes use their richer
 PDF audit. Exporting never changes the primary database.
+
+`--format obj` exports existing frozen triangle solids into separate Wavefront
+OBJ files. It defaults to `assembly` for detail projects and `engineering_graph`
+for structural projects; those are the only supported OBJ artifact keys. It does
+not rerun extraction. Detail filenames use the drawing's assembly and part marks,
+for example `EP14-part-7.mm.obj`. Structural filenames use the source page number.
+Open an exported `.obj` in your CAD/mesh application. OBJ has no standardized unit
+field: choose millimetres when importing `.mm.obj`; `.unitless.obj` retains the
+drawing's numeric coordinates with unresolved units, without assuming millimetres.
+
+The export's `result.json` lists file hashes, units, source snapshot/hash and exact
+geometry pointers, plus each omitted part and its reason. Its state is `exported`,
+`partial` or `abstained`; a completed export command can have no OBJ files when no
+supported solid exists. Missing solids, failed reprojection and invalid meshes
+are never replaced with an extrusion of the DXF outline. The current adapters
+cover resolved detail plate solids and resolved single structural meshes.
+Structural collections with presentation-only component offsets, reinforcement
+paths, preview overlays, MEP envelopes and cage assemblies are not exported.
+Each file retains its own frozen relative frame; importing several files does
+not establish their placement as an assembly. The export adds no quantity,
+fabrication or approval authority. Keep the original source/SQLite/audit delivery
+for evidence; OBJ is an optional derivative, not a replacement project delivery.
 
 All output paths must be new. Failed jobs do not publish a success manifest.
 The CLI monitors output and explicit sibling `<output>.temporary` staging with

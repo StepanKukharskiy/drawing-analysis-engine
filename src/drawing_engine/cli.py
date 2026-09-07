@@ -342,9 +342,9 @@ def main(argv=None):
     audit.add_argument("--estimation-profile", type=Path, default=DEFAULT_PROFILE_PATH)
     replay = commands.add_parser("replay-audit", help="regenerate an audit from frozen SQLite; no extraction")
     replay.add_argument("source", type=Path, help="project result.json")
-    export = commands.add_parser("export", help="explicit JSON or detail HTML export from frozen SQLite")
+    export = commands.add_parser("export", help="export JSON, detail HTML or resolved solid OBJ from frozen SQLite")
     export.add_argument("source", type=Path, help="project result.json")
-    export.add_argument("--format", choices=("json", "html"), default="json")
+    export.add_argument("--format", choices=("json", "html", "obj"), default="json")
     export.add_argument("--artifact")
     for command in (mep, audit, replay, export):
         command.add_argument("--output", type=Path, required=command is not audit,
@@ -412,8 +412,13 @@ def main(argv=None):
                 else:
                     result = export_comparison(args.source, args.output, frozen_bundle=args.frozen_bundle,
                                                estimation_profile=args.estimation_profile)
-            print(json.dumps({"event": "result", "manifest": str(result),
-                              "takeoff_completeness": "not_established"}))
+            event = {"event": "result", "manifest": str(result),
+                     "takeoff_completeness": "not_established"}
+            if args.command == "export" and args.format == "obj":
+                report = read_json(result)
+                event.update(export_state=report["state"], exported_file_count=len(report["artifacts"]),
+                             omitted_part_count=sum(p["state"] == "abstained" for p in report["parts"]))
+            print(json.dumps(event))
             if args.command == "audit" and read_json(result)["execution_status"] != "succeeded":
                 return 1
         else:
@@ -460,6 +465,8 @@ def main(argv=None):
                 reserve_bytes=int(args.reserve_gib * GIB), max_growth_bytes=int(args.max_growth_gib * GIB),
                 required_outputs=[args.output if args.command == "replay-audit" else args.output / "result.json"],
                 cwd=Path(__file__).resolve().parents[2], env={**os.environ, "TMPDIR": str(temporary)})
+            if not any(temporary.iterdir()):
+                temporary.rmdir()
     except (KeyboardInterrupt, EOFError, OSError, ValueError, KeyError, IndexError, RuntimeError, subprocess.CalledProcessError) as exc:
         if isinstance(exc, KeyboardInterrupt) or (isinstance(exc, subprocess.CalledProcessError) and exc.returncode in (130, -2)):
             print(json.dumps({"event": "cancelled", "message": "Audit cancelled."}), file=sys.stderr)

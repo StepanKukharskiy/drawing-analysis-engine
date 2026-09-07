@@ -31,6 +31,7 @@ Keep the virtual environment active when running the launcher from another folde
 estimation audit /path/to/drawing.pdf --task structural --output /path/to/new-project
 estimation detail /path/to/detail.pdf --assembly "EXACT DRAWING MARK" --output /path/to/new-detail-project
 estimation inspect /path/to/new-project/result.json --artifact comparison
+estimation export /path/to/new-detail-project/result.json --format obj --output /path/to/new-obj-export
 ```
 
 Use a fresh output directory. A delivery preserves the source PDF, `project.sqlite`,
