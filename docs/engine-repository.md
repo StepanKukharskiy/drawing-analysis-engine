@@ -1,5 +1,29 @@
 # Engine repository boundary
 
+## Canonical repository
+
+The published engine repository is
+[StepanKukharskiy/drawing-analysis-engine](https://github.com/StepanKukharskiy/drawing-analysis-engine).
+Its integration branch is `main`; this is the shared Git history for engine code,
+CLI, resources, curated developer tools and tests.
+
+```sh
+git clone https://github.com/StepanKukharskiy/drawing-analysis-engine.git
+cd drawing-analysis-engine
+```
+
+For an existing checkout, use `git pull` there to receive published updates.
+Follow the root README for environment setup and CLI usage.
+
+The broader development workspace remains the home of consumer app source,
+research, private qualification inputs, customer projects and historical evidence.
+Engine changes made there must be carried into the canonical engine checkout
+before publication; a local workspace edit is not a published revision. Preserve
+the existing Git history and publish only the manifest-selected engine files.
+Source exclusion does not authorize deleting or relocating workspace data.
+
+## Source selection
+
 `deploy/source/engine-manifest.json` is the explicit engine development selection.
 Use `stage_source.py --profile engine --destination /absolute/new/directory` under
 the artifact-job wrapper shown in the root README. Existing `source` and `runtime`
@@ -46,7 +70,9 @@ lane with its exact inputs and history; do not copy customer drawings into Git.
 
 ## Git publication check
 
-Initialize Git only in the new stage, then add its source files. Run
+Use the canonical checkout for ongoing commits. Initialize Git in a fresh stage
+only when an independent staging check needs it; do not reinitialize the full
+workspace or replace the canonical history. Stage the intended changes and run
 `python -B deploy/source/engine_repository.py check-index` before committing.
 It checks exact path membership, staged bytes, executable modes, alias targets,
 unmerged entries and unignored untracked files. The generated `source-stage.json`
@@ -55,7 +81,8 @@ the manifest and index check define the publication boundary.
 
 CI runs the index check, installs the pinned Python 3.14 dependencies, builds
 Tesseract 5.5.2 from the structural deployment's verified source archive, installs
-host language data/fonts, and executes the same test and smoke commands. An actual hosted CI run
-requires publishing the repository; local verification does not claim one ran.
+host language data/fonts, and executes the same test and smoke commands. Check
+hosted results in [GitHub Actions](https://github.com/StepanKukharskiy/drawing-analysis-engine/actions);
+local verification does not establish that a hosted run passed.
 No distribution license is selected automatically. Decide licensing before a
 public release; private source preparation does not grant third-party rights.

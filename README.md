@@ -5,6 +5,10 @@ reinforcement, detail/cage and bounded MEP/HVAC workflows. Native drawing
 evidence determines geometry and interpretation. Declared schedule values,
 calculated results and engineer approval remain separate.
 
+Canonical engine repository: [StepanKukharskiy/drawing-analysis-engine](https://github.com/StepanKukharskiy/drawing-analysis-engine),
+branch `main`. See the [repository guide](docs/engine-repository.md) for the
+publication boundary and its relationship to the full development workspace.
+
 ## Setup
 
 Use Python 3.14. From the checkout root:
@@ -70,7 +74,8 @@ python3 -B src/drawing_engine/operations/run_artifact_job.py \
   --profile engine --destination /absolute/path/to/new-engine-repo
 ```
 
-Initialize Git in that staged directory when ready. Before committing, run
+Use the existing canonical repository for ongoing development; a fresh stage
+checks the source selection without replacing its Git history. Before committing, run
 `python -B deploy/source/engine_repository.py check-index` to verify that the
 index contains exactly the manifest's files, bytes and executable/alias modes.
 Customer data, private fixtures, app source, research and operational receipts

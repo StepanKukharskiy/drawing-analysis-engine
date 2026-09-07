@@ -76,7 +76,10 @@ Never collapse `calculated`, `declared`, and `approved` into one value.
 - `deploy/source/manifest.json` defines the curated source and CLI-only runtime
   staging profiles. `src/drawing_engine/` owns engine code by responsibility;
   `deploy/source/engine-manifest.json` separately defines the engine-only Git
-  repository. Use `stage_source.py --profile engine` and verify its Git index
+  repository. Its canonical shared history is
+  `https://github.com/StepanKukharskiy/drawing-analysis-engine`, branch `main`.
+  See `docs/engine-repository.md` for publication and workspace boundaries.
+  Use `stage_source.py --profile engine` and verify its Git index
   with `engine_repository.py check-index`; app/research and private inventories
   are excluded. Its synthetic test gate is not private replay qualification.
   `apps/review/` owns app source, `tools/` developer commands and `research/`
